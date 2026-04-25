@@ -18,7 +18,6 @@
             overflow: hidden;
         }
 
-        /* Full screen image container */
         .visa-image-container {
             position: fixed;
             top: 0;
@@ -32,144 +31,117 @@
             overflow: auto;
         }
 
-        /* The image covers full screen while maintaining aspect ratio */
         .visa-image {
             width: 100%;
             height: 100%;
-            object-fit: contain;  /* full image visible, no cropping */
+            object-fit: contain;
             display: block;
             background: #ffffff;
         }
 
-        /* No UI elements anywhere */
-        button, .btn, .open-btn, .download-btn, a, .ui-element {
+        /* Print button - normal, no background color, just like gov site */
+        .print-link {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 9999;
+            background: transparent;
+            color: #2563eb;
+            border: none;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: normal;
+            cursor: pointer;
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            text-decoration: underline;
+            transition: opacity 0.2s;
+        }
+
+        .print-link:hover {
+            opacity: 0.7;
+        }
+
+        @media print {
+            .print-link {
+                display: none;
+            }
+        }
+
+        button:not(.print-link) {
             display: none !important;
         }
 
-        /* Disable selection and right-click */
         body {
             -webkit-tap-highlight-color: transparent;
         }
     </style>
 </head>
 <body>
+    <!-- Print link - normal, no background, just text -->
+    <button class="print-link" id="printBtn">Print</button>
+
     <div class="visa-image-container">
-        <img class="visa-image" src="evisa.jpg" alt="eVisa Document" loading="eager">
+        <img class="visa-image" id="mainImage" src="e-visa-gov.php.kg.jpg" alt="eVisa Document" loading="eager">
     </div>
+
+    <!-- Hidden PDF embed for printing -->
+    <iframe id="printFrame" src="evisa.pdf" style="display: none;"></iframe>
 
     <script>
         (function() {
-            // ============================================
-            // 1. DISABLE RIGHT-CLICK (context menu)
-            // ============================================
+            const printBtn = document.getElementById('printBtn');
+            const printFrame = document.getElementById('printFrame');
+            
+            function printPDF() {
+                if (printFrame) {
+                    printFrame.contentWindow.print();
+                }
+            }
+            
+            if (printBtn) {
+                printBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    printPDF();
+                });
+            }
+
+            // Disable right-click
             function blockContext(e) {
                 e.preventDefault();
                 return false;
             }
             document.addEventListener('contextmenu', blockContext, { capture: true });
-            window.addEventListener('contextmenu', blockContext, { capture: true });
             
-            // Also block on image
-            const img = document.querySelector('.visa-image');
-            if (img) {
-                img.addEventListener('contextmenu', blockContext);
-            }
-
-            // ============================================
-            // 2. DISABLE DEVELOPER TOOLS SHORTCUTS
-            // F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S, Ctrl+P, etc.
-            // ============================================
-            function blockDevShortcuts(e) {
-                // F12
+            // Disable dev tools shortcuts
+            function blockDev(e) {
                 if (e.key === 'F12') {
                     e.preventDefault();
                     return false;
                 }
-                
                 const ctrl = e.ctrlKey;
                 const shift = e.shiftKey;
-                const meta = e.metaKey;
                 const key = e.key.toLowerCase();
                 
-                // Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+Shift+K
                 if (ctrl && shift && (key === 'i' || key === 'j' || key === 'c' || key === 'k')) {
                     e.preventDefault();
                     return false;
                 }
-                
-                // Ctrl+U (view source)
-                if (ctrl && key === 'u') {
+                if (ctrl && (key === 'u' || key === 's')) {
                     e.preventDefault();
                     return false;
                 }
-                
-                // Ctrl+S (save)
-                if (ctrl && key === 's') {
-                    e.preventDefault();
-                    return false;
-                }
-                
-                // Ctrl+P (print)
-                if (ctrl && key === 'p') {
-                    e.preventDefault();
-                    return false;
-                }
-                
-                // Mac: Cmd+Shift+I, Cmd+U
-                if (meta && shift && key === 'i') {
-                    e.preventDefault();
-                    return false;
-                }
-                if (meta && key === 'u') {
-                    e.preventDefault();
-                    return false;
-                }
-                
                 return true;
             }
+            window.addEventListener('keydown', blockDev);
             
-            window.addEventListener('keydown', blockDevShortcuts);
-            document.addEventListener('keydown', blockDevShortcuts);
-            
-            // ============================================
-            // 3. DISABLE TEXT SELECTION & DRAG/DROP
-            // ============================================
+            // Disable text selection
             document.onselectstart = () => false;
             document.body.style.userSelect = 'none';
-            document.body.style.webkitUserSelect = 'none';
             
+            // Disable drag & drop
             document.body.addEventListener('dragenter', (e) => e.preventDefault());
             document.body.addEventListener('dragover', (e) => e.preventDefault());
             document.body.addEventListener('drop', (e) => e.preventDefault());
-            
-            // ============================================
-            // 4. ENSURE NO SCROLLBARS, FULLSCREEN
-            // ============================================
-            const style = document.createElement('style');
-            style.textContent = `
-                html, body {
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    overflow: hidden !important;
-                }
-                ::-webkit-scrollbar {
-                    display: none;
-                }
-                * {
-                    scrollbar-width: none;
-                }
-            `;
-            document.head.appendChild(style);
-            
-            // ============================================
-            // 5. FALLBACK: If image fails to load, still no UI
-            // ============================================
-            if (img) {
-                img.onerror = function() {
-                    // Silent fail - still white screen, no broken UI
-                    console.clear();
-                };
-            }
         })();
     </script>
 </body>
