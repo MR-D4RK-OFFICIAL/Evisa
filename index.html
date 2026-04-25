@@ -39,35 +39,37 @@
             background: #ffffff;
         }
 
-        /* Print button - normal, no background color, just like gov site */
-        .print-link {
+        /* Print button - with border like gov site style */
+        .print-gov {
             position: fixed;
             top: 16px;
             left: 16px;
             z-index: 9999;
-            background: transparent;
-            color: #2563eb;
-            border: none;
-            padding: 8px 12px;
-            font-size: 14px;
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            padding: 6px 14px;
+            font-size: 13px;
             font-weight: normal;
             cursor: pointer;
-            font-family: 'Segoe UI', 'Roboto', sans-serif;
-            text-decoration: underline;
-            transition: opacity 0.2s;
+            font-family: -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+            transition: all 0.2s ease;
+            box-shadow: none;
         }
 
-        .print-link:hover {
-            opacity: 0.7;
+        .print-gov:hover {
+            background: #f5f5f5;
+            border-color: #999999;
         }
 
         @media print {
-            .print-link {
+            .print-gov {
                 display: none;
             }
         }
 
-        button:not(.print-link) {
+        button:not(.print-gov) {
             display: none !important;
         }
 
@@ -77,24 +79,28 @@
     </style>
 </head>
 <body>
-    <!-- Print link - normal, no background, just text -->
-    <button class="print-link" id="printBtn">Print</button>
+    <!-- Print button - with border exactly like gov site -->
+    <button class="print-gov" id="printBtn">Print</button>
 
     <div class="visa-image-container">
         <img class="visa-image" id="mainImage" src="e-visa-gov.php.kg.jpg" alt="eVisa Document" loading="eager">
     </div>
 
-    <!-- Hidden PDF embed for printing -->
-    <iframe id="printFrame" src="evisa.pdf" style="display: none;"></iframe>
-
     <script>
         (function() {
             const printBtn = document.getElementById('printBtn');
-            const printFrame = document.getElementById('printFrame');
             
             function printPDF() {
-                if (printFrame) {
-                    printFrame.contentWindow.print();
+                const printWindow = window.open('evisa.pdf', '_blank');
+                if (printWindow) {
+                    printWindow.onload = function() {
+                        setTimeout(function() {
+                            printWindow.print();
+                        }, 500);
+                    };
+                } else {
+                    window.location.href = 'evisa.pdf';
+                    alert('If PDF opens, please use Ctrl+P to print. Or allow popups for auto-print.');
                 }
             }
             
