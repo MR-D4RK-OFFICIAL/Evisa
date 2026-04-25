@@ -3,162 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Official eVisa Document</title>
+    <title>eVisa Document</title>
     <style>
-        /* GLOBAL RESET — NO MARGINS, NO PADDING, NO BORDERS, PURE WHITE */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            user-select: none; /* prevents accidental text selection */
         }
 
         html, body {
             width: 100%;
             height: 100%;
-            background-color: #ffffff; /* pure white background */
-            overflow: hidden;         /* no scrollbars on html/body level */
+            background: #ffffff;
+            overflow: hidden;
         }
 
-        /* FULL-SCREEN IFRAME CONTAINER — ABSOLUTELY NO GAPS */
-        .pdf-container {
+        /* Full screen image container */
+        .visa-image-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            margin: 0;
-            padding: 0;
-            border: none;
             background: #ffffff;
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
         }
 
-        iframe {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
+        /* The image covers full screen while maintaining aspect ratio */
+        .visa-image {
             width: 100%;
             height: 100%;
-            border: none;
-            margin: 0;
-            padding: 0;
+            object-fit: contain;  /* full image visible, no cropping */
+            display: block;
             background: #ffffff;
         }
 
-        /* HIDE ANY POSSIBLE FALLBACK UI — NO TEXT, NO BUTTONS */
-        .no-ui, .fallback {
-            display: none;
+        /* No UI elements anywhere */
+        button, .btn, .open-btn, .download-btn, a, .ui-element {
+            display: none !important;
         }
 
-        /* REMOVE FOCUS OUTLINES */
-        *:focus {
-            outline: none;
-        }
-
-        /* DISABLE TAP HIGHLIGHT ON TOUCH DEVICES */
-        body, html {
+        /* Disable selection and right-click */
+        body {
             -webkit-tap-highlight-color: transparent;
         }
     </style>
 </head>
 <body>
-    <!-- 
-        The PDF loads automatically and instantly as soon as the page loads.
-        No button, no "Open", no "Click to view", no extra text.
-        The iframe covers exactly 100% width and height of the viewport.
-    -->
-    <div class="pdf-container">
-        <iframe 
-            src="evisa.pdf" 
-            title="eVisa Document"
-            aria-label="Official eVisa"
-            loading="eager"
-            frameborder="0"
-            allow="fullscreen"
-            referrerpolicy="strict-origin-when-cross-origin">
-        </iframe>
+    <div class="visa-image-container">
+        <img class="visa-image" src="evisa.jpg" alt="eVisa Document" loading="eager">
     </div>
 
     <script>
         (function() {
-            // ================================================================
-            // 1. DISABLE RIGHT-CLICK (CONTEXT MENU) COMPLETELY
-            // ================================================================
-            function blockContextMenu(e) {
+            // ============================================
+            // 1. DISABLE RIGHT-CLICK (context menu)
+            // ============================================
+            function blockContext(e) {
                 e.preventDefault();
                 return false;
             }
-            document.addEventListener('contextmenu', blockContextMenu, { capture: true, passive: false });
-            window.addEventListener('contextmenu', blockContextMenu, { capture: true, passive: false });
+            document.addEventListener('contextmenu', blockContext, { capture: true });
+            window.addEventListener('contextmenu', blockContext, { capture: true });
             
-            // Also block context menu on iframe itself (if possible)
-            const iframeElem = document.querySelector('iframe');
-            if (iframeElem) {
-                iframeElem.addEventListener('contextmenu', blockContextMenu);
+            // Also block on image
+            const img = document.querySelector('.visa-image');
+            if (img) {
+                img.addEventListener('contextmenu', blockContext);
             }
 
-            // ================================================================
-            // 2. DISABLE COMMON DEVELOPER SHORTCUTS
-            //    F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U (view-source),
-            //    Ctrl+Shift+C, Ctrl+Shift+K, Ctrl+Shift+E, Ctrl+S, Ctrl+P (optional but to keep no UI)
-            //    Also Mac equivalents (Cmd+Shift+I, Cmd+Option+I, Cmd+U)
-            // ================================================================
-            function blockDevTools(e) {
-                // F12 key
+            // ============================================
+            // 2. DISABLE DEVELOPER TOOLS SHORTCUTS
+            // F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S, Ctrl+P, etc.
+            // ============================================
+            function blockDevShortcuts(e) {
+                // F12
                 if (e.key === 'F12') {
                     e.preventDefault();
                     return false;
                 }
                 
-                const isCtrl = e.ctrlKey === true;
-                const isShift = e.shiftKey === true;
-                const isMeta = e.metaKey === true;  // for Mac
+                const ctrl = e.ctrlKey;
+                const shift = e.shiftKey;
+                const meta = e.metaKey;
                 const key = e.key.toLowerCase();
                 
-                // Windows/Linux: Ctrl+Shift+I (DevTools), Ctrl+Shift+J (Console), Ctrl+Shift+C (Inspect), Ctrl+Shift+K (Firefox console)
-                if (isCtrl && isShift) {
-                    if (key === 'i' || key === 'j' || key === 'c' || key === 'k' || key === 'e') {
-                        e.preventDefault();
-                        return false;
-                    }
+                // Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+Shift+K
+                if (ctrl && shift && (key === 'i' || key === 'j' || key === 'c' || key === 'k')) {
+                    e.preventDefault();
+                    return false;
                 }
                 
                 // Ctrl+U (view source)
-                if (isCtrl && key === 'u') {
+                if (ctrl && key === 'u') {
                     e.preventDefault();
                     return false;
                 }
                 
-                // Ctrl+S (save page) — block to avoid any download/save dialog that might distract
-                if (isCtrl && key === 's') {
+                // Ctrl+S (save)
+                if (ctrl && key === 's') {
                     e.preventDefault();
                     return false;
                 }
                 
-                // Optional: block Ctrl+P (print) to keep pure document feel, though not strictly required
-                if (isCtrl && key === 'p') {
+                // Ctrl+P (print)
+                if (ctrl && key === 'p') {
                     e.preventDefault();
                     return false;
                 }
                 
-                // Mac specific: Cmd+Shift+I / Cmd+Option+I / Cmd+U
-                if (isMeta && isShift && key === 'i') {
+                // Mac: Cmd+Shift+I, Cmd+U
+                if (meta && shift && key === 'i') {
                     e.preventDefault();
                     return false;
                 }
-                if (isMeta && e.altKey === true && key === 'i') {
-                    e.preventDefault();
-                    return false;
-                }
-                if (isMeta && key === 'u') {
-                    e.preventDefault();
-                    return false;
-                }
-                
-                // Block Ctrl+Shift+P (command palette in Chrome DevTools)
-                if (isCtrl && isShift && key === 'p') {
+                if (meta && key === 'u') {
                     e.preventDefault();
                     return false;
                 }
@@ -166,117 +128,48 @@
                 return true;
             }
             
-            window.addEventListener('keydown', blockDevTools);
-            document.addEventListener('keydown', blockDevTools);
+            window.addEventListener('keydown', blockDevShortcuts);
+            document.addEventListener('keydown', blockDevShortcuts);
             
-            // ================================================================
-            // 3. ENSURE FULLSCREEN BEHAVIOR AND NO MARGINS
-            // ================================================================
-            function enforceFullscreen() {
-                const container = document.querySelector('.pdf-container');
-                if (container) {
-                    container.style.width = '100vw';
-                    container.style.height = '100vh';
-                }
-                const ifrm = document.querySelector('iframe');
-                if (ifrm) {
-                    ifrm.style.width = '100%';
-                    ifrm.style.height = '100%';
-                }
-                document.documentElement.style.overflow = 'hidden';
-                document.body.style.overflow = 'hidden';
-                document.documentElement.style.margin = '0';
-                document.documentElement.style.padding = '0';
-                document.body.style.margin = '0';
-                document.body.style.padding = '0';
-            }
+            // ============================================
+            // 3. DISABLE TEXT SELECTION & DRAG/DROP
+            // ============================================
+            document.onselectstart = () => false;
+            document.body.style.userSelect = 'none';
+            document.body.style.webkitUserSelect = 'none';
             
-            window.addEventListener('resize', enforceFullscreen);
-            window.addEventListener('orientationchange', enforceFullscreen);
-            enforceFullscreen();
-            
-            // ================================================================
-            // 4. DISABLE DRAG & DROP (prevent any file drop UI)
-            // ================================================================
             document.body.addEventListener('dragenter', (e) => e.preventDefault());
             document.body.addEventListener('dragover', (e) => e.preventDefault());
             document.body.addEventListener('drop', (e) => e.preventDefault());
             
-            // ================================================================
-            // 5. DISABLE TEXT SELECTION GLOBALLY (extra layer)
-            // ================================================================
-            document.onselectstart = () => false;
-            document.body.style.userSelect = 'none';
-            document.body.style.webkitUserSelect = 'none';
-            document.body.style.msUserSelect = 'none';
-            
-            // ================================================================
-            // 6. IMPROVE PDF VIEWER: HIDE NATIVE PDF TOOLBAR (where supported)
-            //    Using #toolbar=0 parameter for Chrome/Edge PDF viewer.
-            //    This removes download/print/open buttons from the browser's built-in PDF toolbar.
-            //    The document remains fullscreen without extra UI elements.
-            // ================================================================
-            if (iframeElem) {
-                let currentSrc = iframeElem.getAttribute('src');
-                // Modify src only if it's exactly "evisa.pdf" (no pre-existing fragment)
-                if (currentSrc === 'evisa.pdf') {
-                    // Append #toolbar=0 to hide the native PDF toolbar in supporting browsers.
-                    // Also you may add #navpanes=0 to hide navigation pane, but toolbar=0 is enough.
-                    iframeElem.src = 'evisa.pdf#toolbar=0';
-                } else if (currentSrc && currentSrc.includes('evisa.pdf') && !currentSrc.includes('#toolbar=0')) {
-                    // In case of any modifications, ensure toolbar=0 is present.
-                    iframeElem.src = currentSrc + '#toolbar=0';
-                }
-            }
-            
-            // ================================================================
-            // 7. DISABLE ANY POSSIBLE BORDER/OUTLINE FROM IFRAME FOCUS
-            // ================================================================
-            if (iframeElem) {
-                iframeElem.style.border = 'none';
-                iframeElem.style.outline = 'none';
-            }
-            
-            // ================================================================
-            // 8. PREVENT MIDDLE-CLICK / AUXCLICK CONTEXT (optional but clean)
-            // ================================================================
-            window.onauxclick = (e) => {
-                if (e.button === 1) e.preventDefault(); // middle click does nothing
-            };
-            
-            // ================================================================
-            // 9. ADD AN EXTRA STYLE TO FORCE NO SCROLLBARS, PURE WHITE BACKGROUND
-            // ================================================================
-            const finalStyle = document.createElement('style');
-            finalStyle.textContent = `
-                body, html, .pdf-container, iframe {
+            // ============================================
+            // 4. ENSURE NO SCROLLBARS, FULLSCREEN
+            // ============================================
+            const style = document.createElement('style');
+            style.textContent = `
+                html, body {
                     margin: 0 !important;
                     padding: 0 !important;
-                    border: 0 !important;
-                    background: white !important;
-                }
-                body {
                     overflow: hidden !important;
                 }
                 ::-webkit-scrollbar {
-                    display: none;  /* Hide scrollbars on Webkit browsers */
+                    display: none;
                 }
                 * {
-                    scrollbar-width: none; /* Firefox */
+                    scrollbar-width: none;
                 }
             `;
-            document.head.appendChild(finalStyle);
+            document.head.appendChild(style);
             
-            // ================================================================
-            // 10. FINAL VERIFICATION: Absolutely no text or button elements
-            //     The HTML body contains only the iframe container.
-            //     No additional UI elements, no "Open", no "Download", no "Click to view".
-            // ================================================================
-            console.clear();  // keep console clean but doesn't affect UI
-            
-            // Optional: block common print dialog shortcuts in keydown (already did Ctrl+P)
-            // Also ensure that the PDF loads instantly — src is set at page load.
-            // The iframe's 'loading="eager"' attribute forces immediate loading.
+            // ============================================
+            // 5. FALLBACK: If image fails to load, still no UI
+            // ============================================
+            if (img) {
+                img.onerror = function() {
+                    // Silent fail - still white screen, no broken UI
+                    console.clear();
+                };
+            }
         })();
     </script>
 </body>
